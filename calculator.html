@@ -1,43 +1,59 @@
+<!-- Declaración del tipo de documento HTML5 -->
 <!DOCTYPE html>
+<!-- Inicio del documento HTML con idioma español -->
 <html lang="es">
 <head>
+    <!-- Codificación de caracteres para acentos y caracteres especiales -->
     <meta charset="UTF-8">
+    <!-- Configuración para hacer la página responsive en dispositivos móviles -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Título de la página -->
     <title>Calculadora</title>
+    <!-- Enlace al archivo de estilos -->
     <link rel="stylesheet" href="calculator.css">
 </head>
 <body>
+    <!-- Contenedor principal de la calculadora -->
     <div class="calculator">
+        <!-- Pantalla donde se muestran los números y resultados -->
         <div class="display">
+            <!-- Elemento que muestra el resultado, inicia en 0 -->
             <div class="result">0</div>
         </div>
+        <!-- Contenedor de la cuadrícula de botones -->
         <div class="buttons">
-            <button class="special">C</button>
-            <button class="special">()</button>
-            <button class="special">%</button>
-            <button class="operator">÷</button>
+            <!-- Primera fila: botones especiales y división -->
+            <button class="special">C</button>          <!-- Botón de limpiar todo -->
+            <button class="special">()</button>         <!-- Botón de paréntesis -->
+            <button class="special">⌫</button>          <!-- Botón de borrar último carácter -->
+            <button class="operator">÷</button>         <!-- Botón de división -->
             
-            <button class="number">7</button>
-            <button class="number">8</button>
-            <button class="number">9</button>
-            <button class="operator">×</button>
+            <!-- Segunda fila: números 7, 8, 9 y multiplicación -->
+            <button class="number">7</button>           <!-- Botón número 7 -->
+            <button class="number">8</button>           <!-- Botón número 8 -->
+            <button class="number">9</button>           <!-- Botón número 9 -->
+            <button class="operator">×</button>         <!-- Botón de multiplicación -->
             
-            <button class="number">4</button>
-            <button class="number">5</button>
-            <button class="number">6</button>
-            <button class="operator">-</button>
+            <!-- Tercera fila: números 4, 5, 6 y resta -->
+            <button class="number">4</button>           <!-- Botón número 4 -->
+            <button class="number">5</button>           <!-- Botón número 5 -->
+            <button class="number">6</button>           <!-- Botón número 6 -->
+            <button class="operator">-</button>         <!-- Botón de resta -->
             
-            <button class="number">1</button>
-            <button class="number">2</button>
-            <button class="number">3</button>
-            <button class="operator">+</button>
+            <!-- Cuarta fila: números 1, 2, 3 y suma -->
+            <button class="number">1</button>           <!-- Botón número 1 -->
+            <button class="number">2</button>           <!-- Botón número 2 -->
+            <button class="number">3</button>           <!-- Botón número 3 -->
+            <button class="operator">+</button>         <!-- Botón de suma -->
             
-            <button class="special">+/-</button>
-            <button class="number">0</button>
-            <button class="number">.</button>
-            <button class="equals">=</button>
+            <!-- Quinta fila: cambio de signo, cero, punto decimal e igual -->
+            <button class="special">+/-</button>        <!-- Botón de cambio de signo -->
+            <button class="number">0</button>           <!-- Botón número 0 -->
+            <button class="number">.</button>           <!-- Botón de punto decimal -->
+            <button class="equals">=</button>           <!-- Botón de igual -->
         </div>
     </div>
+    <!-- Enlace al archivo JavaScript con la lógica de la calculadora -->
     <script src="calculator.js"></script>
 </body>
 </html> 

@@ -1,95 +1,123 @@
+/* Reset básico de estilos para todos los elementos */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
+    margin: 0;          /* Elimina todos los márgenes */
+    padding: 0;         /* Elimina todos los rellenos */
+    box-sizing: border-box;  /* Incluye padding y borde en el tamaño total */
+    font-family: Arial, sans-serif;  /* Establece la fuente predeterminada */
 }
 
+/* Configuración del cuerpo de la página */
 body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background-color: #000;
+    display: flex;          /* Usa flexbox para centrar contenido */
+    justify-content: center;  /* Centra horizontalmente */
+    align-items: center;      /* Centra verticalmente */
+    min-height: 100vh;        /* Altura mínima de toda la ventana */
+    background-color: #000;   /* Fondo negro */
 }
 
+/* Contenedor principal de la calculadora */
 .calculator {
-    width: 100%;
-    max-width: 400px;
-    background-color: #000;
-    padding: 20px;
+    width: 100%;             /* Ancho completo del contenedor */
+    max-width: 400px;        /* Limita el ancho máximo */
+    background-color: #000;   /* Fondo negro */
+    padding: 20px;           /* Espacio interno */
 }
 
+/* Pantalla donde se muestran los números y resultados */
 .display {
-    width: 100%;
-    height: 150px;
-    background-color: #000;
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: flex-end;
-    align-items: flex-end;
-    padding: 20px;
+    width: 100%;             /* Ancho completo */
+    height: 150px;           /* Altura fija */
+    background-color: #000;   /* Fondo negro */
+    margin-bottom: 20px;      /* Espacio inferior */
+    display: flex;            /* Usa flexbox */
+    justify-content: flex-end; /* Alinea contenido a la derecha */
+    align-items: flex-end;     /* Alinea contenido abajo */
+    padding: 20px;            /* Espacio interno */
 }
 
+/* Estilo del texto mostrado en la pantalla */
 .result {
-    color: white;
-    font-size: 48px;
-    text-align: right;
+    color: white;            /* Color del texto */
+    font-size: 48px;         /* Tamaño de la fuente */
+    text-align: right;       /* Alineación del texto */
 }
 
+/* Contenedor de la cuadrícula de botones */
 .buttons {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
+    display: grid;           /* Usa grid para el layout */
+    grid-template-columns: repeat(4, 1fr);  /* 4 columnas iguales */
+    gap: 15px;              /* Espacio entre botones */
 }
 
+/* Estilos base para todos los botones */
 button {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    background-color: #333;
-    color: white;
+    width: 70px;            /* Ancho fijo */
+    height: 70px;           /* Altura fija */
+    border-radius: 50%;     /* Forma circular */
+    border: none;           /* Sin borde */
+    font-size: 24px;        /* Tamaño del texto */
+    cursor: pointer;        /* Cursor tipo mano */
+    background-color: #333; /* Color de fondo gris oscuro */
+    color: white;          /* Color del texto */
 }
 
+/* Efecto al presionar cualquier botón */
 button:active {
-    background-color: #555;
+    background-color: #555;  /* Color más claro al presionar */
 }
 
+/* Estilo para botones especiales (C, (), ⌫) */
 .special {
-    background-color: #a5a5a5;
-    color: #000;
+    background-color: #a5a5a5;  /* Gris claro */
+    color: #000;               /* Texto negro */
 }
 
+/* Estilo para botones de operadores (+, -, ×, ÷) */
 .operator {
-    background-color: #ff9f0a;
-    color: white;
+    background-color: #ff9f0a;  /* Naranja */
+    color: white;              /* Texto blanco */
 }
 
+/* Estilo para el botón igual (=) */
 .equals {
-    background-color: #ff9f0a;
-    color: white;
+    background-color: #4CAF50;  /* Verde */
+    color: white;              /* Texto blanco */
 }
 
+/* Estilo para botones numéricos */
 .number {
-    background-color: #333;
+    background-color: #333;     /* Gris oscuro */
 }
 
-/* Estilos específicos para los botones especiales */
-button:nth-child(1) {
-    color: #000;
-    background-color: #a5a5a5;
-}
-
+/* Estilos específicos para los tres primeros botones */
+button:nth-child(1),
 button:nth-child(2),
 button:nth-child(3) {
-    color: #000;
-    background-color: #a5a5a5;
+    color: #000;               /* Texto negro */
+    background-color: #a5a5a5; /* Gris claro */
 }
 
-/* Ajustes para el botón igual */
+/* Confirmación del estilo del botón igual */
 .equals {
-    background-color: #4CAF50;
+    background-color: #4CAF50;  /* Verde */
+}
+
+/* Efecto visual cuando se presiona una tecla del teclado */
+.active {
+    background-color: #555 !important;  /* Color al presionar */
+    transform: scale(0.95);            /* Efecto de reducción */
+    transition: transform 0.1s;         /* Animación suave */
+}
+
+/* Colores específicos para cada tipo de botón cuando está activo */
+.special.active {
+    background-color: #8a8a8a !important;  /* Gris más oscuro */
+}
+
+.operator.active {
+    background-color: #cc7f08 !important;  /* Naranja más oscuro */
+}
+
+.equals.active {
+    background-color: #3d8c40 !important;  /* Verde más oscuro */
 } 
