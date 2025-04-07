@@ -59,15 +59,65 @@ function isLastCharOperator() {
 
 // Función para manejar operadores
 function handleOperator(nextOperator) {
+    // Caso especial para el igual cuando hay paréntesis
+    if (nextOperator === '=') {
+        if (parenthesesOpen) {
+            return;
+        }
+
+        if (isLastCharOperator()) {
+            return;
+        }
+
+        // Si la operación es simple (sin paréntesis)
+        if (!fullOperation.includes('(')) {
+            const inputValue = parseFloat(displayValue);
+            if (operator) {
+                const result = calculate(firstOperand, inputValue, operator);
+                if (result === 'No definido' || result === 'Error') {
+                    displayValue = result;
+                    fullOperation = result;
+                } else {
+                    displayValue = `${parseFloat(result.toFixed(7))}`;
+                    fullOperation = displayValue;
+                }
+                firstOperand = null;
+                operator = null;
+                waitingForSecondOperand = false;
+                updateDisplay();
+                return;
+            }
+        } else {
+            // Manejar expresiones con paréntesis
+            try {
+                const result = evaluateCompleteExpression(fullOperation);
+                if (typeof result === 'string') {
+                    displayValue = result;
+                    fullOperation = result;
+                } else {
+                    displayValue = `${parseFloat(result.toFixed(7))}`;
+                    fullOperation = displayValue;
+                }
+                firstOperand = null;
+                operator = null;
+                waitingForSecondOperand = false;
+                updateDisplay();
+            } catch (error) {
+                displayValue = 'Error';
+                fullOperation = 'Error';
+                updateDisplay();
+            }
+            return;
+        }
+    }
+
     const inputValue = parseFloat(displayValue);
 
     // Si estamos dentro de paréntesis, manejarlo diferente
     if (insideParentheses) {
         if (isLastCharOperator() && nextOperator !== '-') {
-            // Reemplazar el último operador
             fullOperation = fullOperation.slice(0, -2) + ' ' + nextOperator + ' ';
         } else if (nextOperator !== '=') {
-            // Añadir el operador a la expresión dentro de paréntesis
             fullOperation += ' ' + nextOperator + ' ';
         }
         updateDisplay();
@@ -117,8 +167,13 @@ function handleOperator(nextOperator) {
         } else {
             displayValue = `${parseFloat(result.toFixed(7))}`;
             firstOperand = result;
-            if (nextOperator === '=') {
+            if (nextOperator === '=' && fullOperation.includes('(')) {
+                const completeResult = evaluateCompleteExpression(fullOperation);
+                displayValue = typeof completeResult === 'number' ? 
+                    `${parseFloat(completeResult.toFixed(7))}` : completeResult;
                 fullOperation = displayValue;
+                firstOperand = parseFloat(completeResult);
+                operator = null;
             }
         }
     }
@@ -132,61 +187,116 @@ function handleOperator(nextOperator) {
 
 // Función para realizar los cálculos
 function calculate(firstOperand, secondOperand, operator) {
-    // Si hay paréntesis, primero evaluar la expresión dentro
-    if (fullOperation.includes('(')) {
-        let expression = fullOperation;
-        // Encontrar y evaluar todas las expresiones entre paréntesis
-        while (expression.includes('(')) {
-            const start = expression.lastIndexOf('(');
-            const end = expression.indexOf(')', start);
-            if (start === -1 || end === -1) break;
-            
-            const innerExpression = expression.substring(start + 1, end);
-            // Evaluar la expresión dentro de los paréntesis
-            const result = evaluateExpression(innerExpression);
-            // Reemplazar la expresión entre paréntesis con su resultado
-            expression = expression.substring(0, start) + result + expression.substring(end + 1);
-        }
-        return evaluateExpression(expression);
+    // Verificar si los operandos son números válidos
+    if (isNaN(firstOperand) || isNaN(secondOperand)) {
+        return 'Error';
     }
 
-    // Cálculos normales sin paréntesis
     switch (operator) {
         case '+': return firstOperand + secondOperand;
         case '-': return firstOperand - secondOperand;
         case '×': return firstOperand * secondOperand;
         case '÷':
-            if (secondOperand === 0) {
-                return 'No definido';
-            }
+            if (secondOperand === 0) return 'No definido';
             return firstOperand / secondOperand;
         case '%': return (firstOperand / 100) * secondOperand;
         default: return secondOperand;
     }
 }
 
-// Nueva función para evaluar expresiones
-function evaluateExpression(expression) {
-    // Eliminar espacios y dividir en términos
-    const terms = expression.split(' ').filter(term => term !== '');
-    let result = parseFloat(terms[0]);
-    
-    for (let i = 1; i < terms.length; i += 2) {
-        const operator = terms[i];
-        const operand = parseFloat(terms[i + 1]);
-        
-        switch (operator) {
-            case '+': result += operand; break;
-            case '-': result -= operand; break;
-            case '×': result *= operand; break;
-            case '÷': 
-                if (operand === 0) return 'No definido';
-                result /= operand; 
-                break;
-            case '%': result = (result / 100) * operand; break;
+// Nueva función para evaluar expresiones completas
+function evaluateCompleteExpression(expression) {
+    try {
+        // Verificar que todos los paréntesis estén cerrados
+        const openCount = (expression.match(/\(/g) || []).length;
+        const closeCount = (expression.match(/\)/g) || []).length;
+        if (openCount !== closeCount) {
+            return 'Error';
         }
+
+        // Evaluar la expresión
+        while (expression.includes('(')) {
+            expression = expression.replace(/\(([^()]+)\)/g, (match, group) => {
+                const result = evaluateExpression(group);
+                return result;
+            });
+        }
+        
+        return evaluateExpression(expression);
+    } catch (error) {
+        return 'Error';
+    }
+}
+
+// Modificar la función evaluateExpression
+function evaluateExpression(expression) {
+    expression = expression.trim();
+    
+    // Manejar el caso de un solo número
+    if (!expression.match(/[\+\-\×\÷]/)) {
+        const value = parseFloat(expression);
+        return isNaN(value) ? 'Error' : value;
     }
     
+    const parts = expression.split(/\s*([\+\-\×\÷])\s*/).filter(part => part !== '');
+    
+    // Manejar multiplicación implícita
+    for (let i = 0; i < parts.length - 1; i++) {
+        if (!isNaN(parts[i]) && parts[i+1].startsWith('(')) {
+            parts.splice(i + 1, 0, '×');
+        }
+    }
+
+    // Primero hacer multiplicación y división
+    for (let i = 1; i < parts.length - 1; i += 2) {
+        if (parts[i] === '×' || parts[i] === '÷') {
+            const left = parseFloat(parts[i - 1]);
+            const right = parseFloat(parts[i + 1]);
+            
+            // Verificar si los operandos son números válidos
+            if (isNaN(left) || isNaN(right)) {
+                return 'Error';
+            }
+
+            let result;
+            if (parts[i] === '×') {
+                result = left * right;
+            } else {
+                if (right === 0) return 'No definido';
+                result = left / right;
+            }
+
+            if (isNaN(result) || !isFinite(result)) {
+                return 'Error';
+            }
+
+            parts.splice(i - 1, 3, result.toString());
+            i -= 2;
+        }
+    }
+
+    // Luego hacer suma y resta
+    let result = parseFloat(parts[0]);
+    if (isNaN(result)) return 'Error';
+
+    for (let i = 1; i < parts.length; i += 2) {
+        const operator = parts[i];
+        const operand = parseFloat(parts[i + 1]);
+        
+        // Verificar si el operando es un número válido
+        if (isNaN(operand)) {
+            return 'Error';
+        }
+
+        if (operator === '+') result += operand;
+        else if (operator === '-') result -= operand;
+    }
+
+    // Verificación final del resultado
+    if (isNaN(result) || !isFinite(result)) {
+        return 'Error';
+    }
+
     return result;
 }
 
@@ -215,30 +325,25 @@ function deleteLastCharacter() {
 function handleParentheses() {
     if (!parenthesesOpen) {
         // Abrir paréntesis
-        if (fullOperation !== '' && !isLastCharOperator()) {
-            fullOperation += ' × ('; // Añadir multiplicación implícita
+        if (fullOperation !== '' && !isLastCharOperator() && !fullOperation.endsWith('(')) {
+            fullOperation += ' × ('; // Multiplicación implícita
         } else {
             fullOperation += '(';
         }
         parenthesesOpen = true;
         insideParentheses = true;
-        parenthesesExpression = '';
     } else {
         // Cerrar paréntesis
-        const lastChar = fullOperation.slice(-1);
-        if (lastChar === '(') {
-            // No cerrar si está vacío
+        if (fullOperation.endsWith('(')) {
+            return; // No cerrar si está vacío
+        }
+        // No cerrar si el último carácter es un operador
+        if (isLastCharOperator()) {
             return;
         }
         fullOperation += ')';
         parenthesesOpen = false;
         insideParentheses = false;
-        
-        // No evaluar la expresión hasta que se presione igual
-        if (fullOperation.endsWith(')') && !fullOperation.includes('=')) {
-            updateDisplay();
-            return;
-        }
     }
     updateDisplay();
 }
