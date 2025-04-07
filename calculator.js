@@ -4,6 +4,8 @@ let operator = null;
 let waitingForSecondOperand = false;
 let fullOperation = '';
 let parenthesesOpen = false;
+let insideParentheses = false;
+let parenthesesExpression = '';
 
 // Función para actualizar la pantalla
 function updateDisplay() {
@@ -58,6 +60,19 @@ function isLastCharOperator() {
 // Función para manejar operadores
 function handleOperator(nextOperator) {
     const inputValue = parseFloat(displayValue);
+
+    // Si estamos dentro de paréntesis, manejarlo diferente
+    if (insideParentheses) {
+        if (isLastCharOperator() && nextOperator !== '-') {
+            // Reemplazar el último operador
+            fullOperation = fullOperation.slice(0, -2) + ' ' + nextOperator + ' ';
+        } else if (nextOperator !== '=') {
+            // Añadir el operador a la expresión dentro de paréntesis
+            fullOperation += ' ' + nextOperator + ' ';
+        }
+        updateDisplay();
+        return;
+    }
 
     // Si no hay números ingresados y se intenta poner un operador (excepto el menos para números negativos)
     if (fullOperation === '' && nextOperator !== '-') {
@@ -117,23 +132,62 @@ function handleOperator(nextOperator) {
 
 // Función para realizar los cálculos
 function calculate(firstOperand, secondOperand, operator) {
+    // Si hay paréntesis, primero evaluar la expresión dentro
+    if (fullOperation.includes('(')) {
+        let expression = fullOperation;
+        // Encontrar y evaluar todas las expresiones entre paréntesis
+        while (expression.includes('(')) {
+            const start = expression.lastIndexOf('(');
+            const end = expression.indexOf(')', start);
+            if (start === -1 || end === -1) break;
+            
+            const innerExpression = expression.substring(start + 1, end);
+            // Evaluar la expresión dentro de los paréntesis
+            const result = evaluateExpression(innerExpression);
+            // Reemplazar la expresión entre paréntesis con su resultado
+            expression = expression.substring(0, start) + result + expression.substring(end + 1);
+        }
+        return evaluateExpression(expression);
+    }
+
+    // Cálculos normales sin paréntesis
     switch (operator) {
-        case '+':
-            return firstOperand + secondOperand;
-        case '-':
-            return firstOperand - secondOperand;
-        case '×':
-            return firstOperand * secondOperand;
+        case '+': return firstOperand + secondOperand;
+        case '-': return firstOperand - secondOperand;
+        case '×': return firstOperand * secondOperand;
         case '÷':
             if (secondOperand === 0) {
-                return secondOperand === 0 ? 'No definido' : Infinity;
+                return 'No definido';
             }
             return firstOperand / secondOperand;
-        case '%':
-            return (firstOperand / 100) * secondOperand;
-        default:
-            return secondOperand;
+        case '%': return (firstOperand / 100) * secondOperand;
+        default: return secondOperand;
     }
+}
+
+// Nueva función para evaluar expresiones
+function evaluateExpression(expression) {
+    // Eliminar espacios y dividir en términos
+    const terms = expression.split(' ').filter(term => term !== '');
+    let result = parseFloat(terms[0]);
+    
+    for (let i = 1; i < terms.length; i += 2) {
+        const operator = terms[i];
+        const operand = parseFloat(terms[i + 1]);
+        
+        switch (operator) {
+            case '+': result += operand; break;
+            case '-': result -= operand; break;
+            case '×': result *= operand; break;
+            case '÷': 
+                if (operand === 0) return 'No definido';
+                result /= operand; 
+                break;
+            case '%': result = (result / 100) * operand; break;
+        }
+    }
+    
+    return result;
 }
 
 // Función para cambiar el signo
@@ -160,16 +214,36 @@ function deleteLastCharacter() {
 // Función para manejar paréntesis
 function handleParentheses() {
     if (!parenthesesOpen) {
-        fullOperation += '(';
+        // Abrir paréntesis
+        if (fullOperation !== '' && !isLastCharOperator()) {
+            fullOperation += ' × ('; // Añadir multiplicación implícita
+        } else {
+            fullOperation += '(';
+        }
         parenthesesOpen = true;
+        insideParentheses = true;
+        parenthesesExpression = '';
     } else {
+        // Cerrar paréntesis
+        const lastChar = fullOperation.slice(-1);
+        if (lastChar === '(') {
+            // No cerrar si está vacío
+            return;
+        }
         fullOperation += ')';
         parenthesesOpen = false;
+        insideParentheses = false;
+        
+        // No evaluar la expresión hasta que se presione igual
+        if (fullOperation.endsWith(')') && !fullOperation.includes('=')) {
+            updateDisplay();
+            return;
+        }
     }
     updateDisplay();
 }
 
-// Event Listeners
+// Receptor de eventos
 document.addEventListener('DOMContentLoaded', () => {
     const calculator = document.querySelector('.calculator');
     
@@ -215,6 +289,8 @@ document.addEventListener('DOMContentLoaded', () => {
             updateDisplay();
         }
     });
+
+    
 
     // Mapeo de teclas del teclado
     const keyboardMap = {
